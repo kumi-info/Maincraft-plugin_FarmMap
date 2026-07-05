@@ -1,0 +1,76 @@
+# ===================== FarmMap（農場マップ）設定 =====================
+# s2e-farm-pro のアリーナ（フロア）設定を読み取り、
+#   ・内側のプレイフィールド（例 31×31）に基礎床（耕地）を敷き、
+#   ・その外側の「装飾余白(margin)」帯に、平らに広がる農場の土台と
+#     建物・背景（納屋・サイロ・干し草・低い柵・木・池・かかし等）を横に配置する
+# プラグイン。高さのある“壁”は作らない（横に広がるデザイン）。
+#
+# 大量設置でサーバーを固めないよう、設置は「1tickあたり上限数」で分割（バッチ）する。
+# 現在のデザインスタイル = #1「木の牧場」。他スタイルは今後追加予定。
+#
+# コマンド: /farmmap <build|clear|level 1-5|reload|status>
+#   build  … 農場マップ（土台＋建物・背景）をバッチ設置で生成
+#   clear  … 生成したものを撤去（FarmMap が置いたブロックのみ元に戻す）
+#   level  … 拡張レベル(1-5)。装飾余白(margin)を 8/10/12/14/16 に切替えて横に広げ、再生成
+#   reload … この config.yml を再読み込み
+#   status … 現在の状態・範囲を表示
+#
+# アリーナ座標・サイズは plugins/s2e-farm-pro/config.yml の
+#   arena.location.{world_key,x,y,z} と arena.{sizeX,sizeZ} から自動取得。
+#   ※ farm の location は「中心」、sizeX/sizeZ は「中心からの半径」（半径モデル）。
+# ====================================================================
+
+source-plugin: s2e-farm-pro
+world: ""
+
+arena:
+  anchor: center
+  center-x-offset: 0
+  center-z-offset: 0
+  size-scale: 1.0
+  size-padding: 0
+
+map:
+  # プレイフィールドの外側に広げる「装飾余白」マス数（建物・背景が広がる帯の幅）。
+  #   margin     … 全方向の既定値（margin-x / margin-z が未指定の時に使う）。
+  #   margin-x   … 横幅(X=東西)方向の余白。例: 半径15 + 56 → 横幅 = 中心±71 = 143マス。
+  #   margin-z   … 奥行き(Z=南北)方向の余白。例: 半径15 + 200 → 奥行き = 中心±215 = 431マス。
+  #   ※ /farmmap level 1-5 は margin-x/margin-z を同じ値(20/24/28/32/36)に揃える（対称化）。
+  #      奥行きだけ長い等の非対称マップは margin-x / margin-z を直接指定して /farmmap reload → build。
+  margin: 20
+  margin-x: 56
+  margin-z: 200
+  # 基礎床を置く Y を arena.y からずらすオフセット（0=フロアと同じ高さ）。
+  floor-y-offset: 0
+  # 内側プレイフィールドに基礎床（耕地）を敷くか。床1層だけなので作物の成長は妨げない。
+  fill-playfield-floor: true
+  # 床の上を1層だけ空気にして整地するか（古い作物/残骸を除去）。
+  #   ⚠ ゲーム中に実行すると育成中の作物が消えるので、配信外のセットアップ時のみ true 推奨。
+  clear-above-floor: false
+
+build:
+  # 1tickあたりに処理するブロック数（大きいほど速いが重い。軽くするなら 800〜1000）。
+  blocks-per-tick: 1800
+  # 物理演算を適用するか。false=連鎖更新を抑えて軽量・安全（推奨）。
+  apply-physics: false
+
+# 生成した農場（土台・建物・背景）を破壊から保護する。アリーナ内部の作物は対象外。
+#   explosion … TNT・クリーパー・/farm tnt 等の爆発（ドラゴンの火の玉爆発も含む）
+#   fire      … 引火・燃焼・延焼（落雷の着火を含む）
+#   break     … 手壊し・エンダーマン・トランプル等のブロック変化
+#   piston    … ピストンによる押し出し
+#   fluid     … 水/溶岩の流入による破壊
+protect:
+  explosion: true
+  fire: true
+  break: true
+  piston: true
+  fluid: true
+
+# アリーナのサイズ/位置が変わったら農場を自動で作り直す。
+auto-follow:
+  enabled: true
+  interval-seconds: 3
+
+# 詳細ログ（設置数・所要tick・スキップ数など）をサーバーログに出す。
+debug: false

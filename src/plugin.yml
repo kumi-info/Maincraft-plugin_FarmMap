@@ -1,0 +1,17 @@
+name: FarmMap
+version: '1.3.0'
+main: com.liverecord.farmmap.FarmMapPlugin
+api-version: '1.21'
+author: LiveRecord
+description: 's2e-farm-pro のアリーナを基準に、横に広がる農場マップ（平らな土台＋建物・背景）をバッチ設置で生成する。'
+softdepend: [s2e-farm-pro]
+commands:
+  farmmap:
+    description: '農場マップ（平らな土台＋建物・背景）を生成/撤去'
+    usage: '/farmmap <build|clear|level 1-5|reload|status>'
+    permission: farmmap.use
+    aliases: [fmap]
+permissions:
+  farmmap.use:
+    description: 'farmmap の操作権限'
+    default: op
